@@ -6,13 +6,13 @@ import (
 	"github.com/felipeweb/nuveo/models"
 	"io"
 	"io/ioutil"
-	"strconv"
 	"strings"
+	"github.com/felipeweb/gopher-utils"
 )
 
 func ToJSON(data io.Reader) ([]models.Client, error) {
-	var client models.Client
-	var pmap map[string]interface{}
+	client := models.Client{Outros:map[interface{}]interface{}{}}
+	var clientMap map[string]interface{}
 
 	bytes, err := ioutil.ReadAll(data)
 
@@ -20,29 +20,30 @@ func ToJSON(data io.Reader) ([]models.Client, error) {
 		return nil, err
 	}
 
-	err = json.Unmarshal(bytes, &pmap)
+	err = json.Unmarshal(bytes, &clientMap)
 
 	if err != nil {
 		return nil, err
 	}
 
-	for key, val := range pmap {
+	for key, value := range clientMap {
 		switch strings.ToLower(key) {
 		case "nome":
-			client.Nome = val.(string)
+			client.Nome = strings.TrimSpace(gopher_utils.ToStr(value))
 		case "email":
-			client.Email = val.(string)
+			client.Email = strings.TrimSpace(gopher_utils.ToStr(value))
 		case "sexo":
-			client.Sexo = val.(string)
+			client.Sexo = strings.TrimSpace(gopher_utils.ToStr(value))
 		case "idade":
-			client.Idade = val.(int)
+			client.Idade = strings.TrimSpace(gopher_utils.ToStr(value))
 		default:
-			client.Outros[key] = val
+			client.Outros[strings.ToLower(key)] = strings.TrimSpace(gopher_utils.ToStr(value))
 		}
 	}
 
 	var clients []models.Client
-	return append(clients, client), err
+	clients = append(clients, client)
+	return clients, err
 }
 
 func ToCSV(data io.Reader) ([]models.Client, error) {
@@ -55,29 +56,28 @@ func ToCSV(data io.Reader) ([]models.Client, error) {
 
 	var clients []models.Client
 
-	for _, line := range matriz {
-		var client models.Client
-
-		for col, value := range line {
-			switch col {
-			case 0:
-				client.Nome = value
-			case 1:
-				client.Email = value
-			case 2:
-				client.Sexo = value
-			case 3:
-				idade, err := strconv.Atoi(value)
-				if err != nil {
-					return nil, err
+	for line, types := range matriz {
+		if line != 0 {
+			client := models.Client{Outros:map[interface{}]interface{}{}}
+			for col, value := range types {
+				switch col {
+				case 0:
+					client.Nome = strings.TrimSpace(value)
+				case 1:
+					client.Email = strings.TrimSpace(value)
+				case 2:
+					client.Sexo = strings.TrimSpace(value)
+				case 3:
+					client.Idade = strings.TrimSpace(value)
+				default:
+					colName := matriz[0][col]
+					colName = strings.TrimSpace(colName)
+					client.Outros[strings.ToLower(colName)] = strings.TrimSpace(value)
 				}
-				client.Idade = idade
-			default:
-				client.Outros[col] = value
 			}
-		}
 
-		clients = append(clients, client)
+			clients = append(clients, client)
+		}
 	}
 
 	return clients, err
