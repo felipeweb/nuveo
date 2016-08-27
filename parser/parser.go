@@ -35,9 +35,13 @@ func ToJSON(data io.Reader) ([]models.Client, error) {
 		case "sexo":
 			client.Sexo = strings.TrimSpace(gopher_utils.ToStr(value))
 		case "idade":
-			client.Idade = strings.TrimSpace(gopher_utils.ToStr(value))
+			value, err := gopher_utils.StrTo(gopher_utils.ToStr(value)).Int()
+			if err != nil {
+				return nil, err
+			}
+			client.Idade = value
 		default:
-			client.Outros[strings.ToLower(key)] = strings.TrimSpace(gopher_utils.ToStr(value))
+			client.Outros[strings.ToLower(key)] = value
 		}
 	}
 
@@ -68,11 +72,15 @@ func ToCSV(data io.Reader) ([]models.Client, error) {
 				case 2:
 					client.Sexo = strings.TrimSpace(value)
 				case 3:
-					client.Idade = strings.TrimSpace(value)
+					value, err := gopher_utils.StrTo(gopher_utils.ToStr(value)).Int()
+					if err != nil {
+						return nil, err
+					}
+					client.Idade = value
 				default:
 					colName := matriz[0][col]
 					colName = strings.TrimSpace(colName)
-					client.Outros[strings.ToLower(colName)] = strings.TrimSpace(value)
+					client.Outros[strings.ToLower(colName)] = value
 				}
 			}
 
