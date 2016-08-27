@@ -14,24 +14,22 @@ const (
 )
 
 func ProcessFile(url string) ([]models.Client, error) {
-	var clients []models.Client
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
-	contentType, err := checkContentTypeIsValid(resp.Header["Content-Type"])
-
-	switch contentType {
-	case JSON:
-		clients, err = parser.ToJSON(resp.Body)
-	case CSV:
-		clients, err = parser.ToCSV(resp.Body)
+	contentType, err := validContentType(resp.Header["Content-Type"])
+	if err != nil {
+		return nil, err
 	}
-
-	return clients, err
+	if contentType == JSON {
+		return parser.ToJSON(resp.Body)
+	} else {
+		return parser.ToCSV(resp.Body)
+	}
 }
 
-func checkContentTypeIsValid(contentTypes []string) (string, error) {
+func validContentType(contentTypes []string) (string, error) {
 	for _, contentType := range contentTypes {
 		ct := strings.ToLower(contentType)
 		if strings.Contains(ct, "/csv") {
