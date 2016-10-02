@@ -11,7 +11,7 @@ import (
 )
 
 func ToJSON(data io.Reader) ([]models.Client, error) {
-	client := models.Client{Outros:map[interface{}]interface{}{}}
+	client := models.Client{Outros:map[string]interface{}{}}
 	var clientMap map[string]interface{}
 
 	bytes, err := ioutil.ReadAll(data)
