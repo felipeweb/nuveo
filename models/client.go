@@ -5,5 +5,5 @@ type Client struct {
 	Email  string
 	Sexo   string
 	Idade  int
-	Outros map[interface{}]interface{}
+	Outros map[string]interface{}
 }
